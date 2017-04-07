@@ -13,6 +13,12 @@ namespace BackBeTrip.Models
         public double Long { get; set; } // долгота 
         [JsonProperty("lat")]
         public double Lat { get; set; } // широта 
+
+        public WayPoint(double Lat, double Long)
+        {
+            this.Lat = Lat;
+            this.Long = Long;
+        }
     }
 
 }

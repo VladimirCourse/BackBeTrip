@@ -47,8 +47,12 @@
         // Получаем данные
         $.getJSON("http://localhost:60603/api/values", function (data) {
             
+         
+            
+
+            //Пример построения маршрута
+            
             var wpts = [];
-            // Проходим по всем данным и устанавливаем для них маркеры
             $.each(data, function (i, item) {
                 var wp = {
                     location: new google.maps.LatLng(item.lat, item.lng),
@@ -70,6 +74,14 @@
                     alert("directions response " + status);
                 }
             });
+            /*
+            $.each(data, function (i, item) {
+                var marker = new google.maps.Marker({
+                    'position': new google.maps.LatLng(item.lat, item.lng),
+                    'map': map,
+                    'title': "xyu"
+                });
+            })*/
         });
     }
 	</script>
