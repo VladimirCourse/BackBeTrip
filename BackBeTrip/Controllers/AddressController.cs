@@ -7,13 +7,14 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using System.Web.Mvc;
 
 namespace BackBeTrip.Controllers
 {
     public class AddressController : ApiController
     {
-        // GET: Address
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public HttpResponseMessage Get(string from, string to, int radius, string types)
         {
             WayPoint fromWp = GoogleController.GetAddress(from);

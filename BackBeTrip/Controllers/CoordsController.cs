@@ -14,6 +14,7 @@ using System.Web.Mvc;
 using Newtonsoft.Json;
 using BackBeTrip.Models;
 using System.Globalization;
+using System.Web.Http.Cors;
 
 namespace BackBeTrip.Controllers
 {
@@ -21,6 +22,7 @@ namespace BackBeTrip.Controllers
     public class CoordsController : ApiController
     {
 
+        [EnableCors(origins: "*", headers: "*", methods: "*")]
         public HttpResponseMessage Get(string from, string to, int radius, string types)
         {
             string [] spl = from.Split(',');
