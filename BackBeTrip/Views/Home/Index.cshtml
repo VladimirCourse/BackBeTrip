@@ -1,88 +1,145 @@
-﻿@{
-	ViewBag.Title = "Home Page";
-}
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-<script src="http://maps.google.com/maps/api/js?sensor=true&key=AIzaSyDfRm2VJqH_rbnfZl0gcxqi8-XZhwIBu5o" type="text/javascript"></script>
+    <script type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
 
-<style>
-	.stationInfo {
-		height: 150px;
-		width: 250px;
-	}
-</style>
+    <script type="text/javascript">
 
-<div id="canvas" style="height: 600px; width:600px;"></div>
-
-<!--Устанавливаем секцию scripts, которая затем будет рендериться на мастер-странице -->
-@section scripts {
-	<script type="text/javascript">
-
-    $(document).ready(function () {
-        GetMap();
-        
-
-    });
-
-    // Функция загрузки
-    function GetMap() {
-
-        google.maps.visualRefresh = true;
-        // установка основных координат
-        var Moscow = new google.maps.LatLng(55.752622, 37.617567);
-
-        // Установка общих параметров отображения карты, как масштаб, центральная точка и тип карты
-        var mapOptions = {
-            zoom: 3,
-            center: Moscow,
-            mapTypeId: google.maps.MapTypeId.G_NORMAL_MAP
-        };
-
-        // Встраиваем гугл-карты в элемент на странице и получаем объект карты
-        var map = new google.maps.Map(document.getElementById("canvas"), mapOptions);
-
-        var directionsDisplay = new google.maps.DirectionsRenderer();
-        directionsDisplay.setMap(map);
-        var directionsService = new google.maps.DirectionsService();
-
-        // Получаем данные
-        $.getJSON("http://localhost:60603/api/values", function (data) {
-            
+         var map = null;
+         var lock = 0;
          
-            
+         var from;
+         var to;
 
-            //Пример построения маршрута
+         function GetMap()
+         {
+            // Initialize the map
+             map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), { credentials: "YYvkVi5x5AVjb6u2KxVs~yC6cCfQKSZtUea3sZtHXZw~AtBX0dJdOCmz2xsJqR0Nbr3IFw237e5vMU5tNTixRPL6bZHN2Qv2toAS9U8fKeSC", mapTypeId: Microsoft.Maps.MapTypeId.road });
+             Microsoft.Maps.Events.addHandler(map, 'click', onMapClick);
+         }
+
+         function ClickRoute(credentials)
+         {
+             from = document.getElementById('txtStart').value;
+             to = document.getElementById('txtEnd').value;
+             map.getCredentials(MakeRouteRequestAddress);
+         }
+
+         function onMapClick(e) {
+             if (e.targetType == 'map') {
+                 var point = new Microsoft.Maps.Point(e.getX(), e.getY());
+                 var locTemp = e.target.tryPixelToLocation(point);
+                 if (lock == 0) {
+                     from = locTemp.latitude.toString() + "," + locTemp.longitude.toString();
+                     lock += 1;
+                 } else if (lock == 1) {
+                     to = locTemp.latitude.toString() + "," + locTemp.longitude.toString();
+                     map.getCredentials(MakeRouteRequest);
+                 }
+             } else if (e.targetType == 'pushpin') {
+                
+             }
+             //alert("dsdsd");
+         }
+
+         function MakeRouteRequest(credentials)
+         {
+             map.entities.clear();
+            //ar from = document.getElementById('txtStart').value;
+            // var to = document.getElementById('txtEnd').value;
+             var url = "http://localhost:60603/api/coords/get?from=" + from + "&to=" + to + "&radius=10000&types=food";
+             $.getJSON(url, function (data) {
+
+                 //var routeRequest = "http://dev.virtualearth.net/REST/v1/Routes?wp.0=" + "55.820911,49.060822" + "&wp.1=" + "51.592365,45.960803" + "&wp.2=" + "55.755826,37.617300" + "&routePathOutput=Points&output=json&jsonp=RouteCallback&key=" + credentials;
+                 var routeRequest = "http://dev.virtualearth.net/REST/v1/Routes?wp.0=" + from;
+                 $.each(data, function (i, item) {  
+                     routeRequest += '&wp.' + (i + 1).toString() + '=' + + item.location.lat.toString() + ',' + item.location.lng.toString();
+
+                     var location = new Microsoft.Maps.Location(item.location.lat, item.location.lng);
+                     var pin = new Microsoft.Maps.Pushpin(location, { 'draggable': false });
+                     map.entities.push(pin);
+                 });
+
+                 routeRequest += "&wp." + (data.length + 1).toString() + "=" + to + "&routePathOutput=Points&output=json&jsonp=RouteCallback&key=" + credentials;
+                 CallRestService(routeRequest);
+             });
             
-            var wpts = [];
-            $.each(data, function (i, item) {
-                var wp = {
-                    location: new google.maps.LatLng(item.lat, item.lng),
-                    stopover: false
-                };
-                wpts.push(wp);
-            })
-            var request = {
-                origin: "Kazan",
-                destination: "Moscow",
-                waypoints: wpts,
-                optimizeWaypoints: true,
-                travelMode: google.maps.DirectionsTravelMode.DRIVING
-            };
-            directionsService.route(request, function (response, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsDisplay.setDirections(response);
-                } else {
-                    alert("directions response " + status);
-                }
-            });
-            /*
-            $.each(data, function (i, item) {
-                var marker = new google.maps.Marker({
-                    'position': new google.maps.LatLng(item.lat, item.lng),
-                    'map': map,
-                    'title': "xyu"
-                });
-            })*/
-        });
-    }
-	</script>
-}
+         }
+
+         function MakeRouteRequestAddress(credentials) {
+             map.entities.clear();
+             //ar from = document.getElementById('txtStart').value;
+             // var to = document.getElementById('txtEnd').value;
+             var url = "http://localhost:60603/api/address/get?from=" + from + "&to=" + to + "&radius=10000&types=food";
+             $.getJSON(url, function (data) {
+
+                 //var routeRequest = "http://dev.virtualearth.net/REST/v1/Routes?wp.0=" + "55.820911,49.060822" + "&wp.1=" + "51.592365,45.960803" + "&wp.2=" + "55.755826,37.617300" + "&routePathOutput=Points&output=json&jsonp=RouteCallback&key=" + credentials;
+                 var routeRequest = "http://dev.virtualearth.net/REST/v1/Routes?wp.0=" + from;
+                 $.each(data, function (i, item) {
+                     routeRequest += '&wp.' + (i + 1).toString() + '=' + +item.location.lat.toString() + ',' + item.location.lng.toString();
+
+                     var location = new Microsoft.Maps.Location(item.location.lat, item.location.lng);
+                     var pin = new Microsoft.Maps.Pushpin(location, { 'draggable': false });
+                     map.entities.push(pin);
+                 });
+
+                 routeRequest += "&wp." + (data.length + 1).toString() + "=" + to + "&routePathOutput=Points&output=json&jsonp=RouteCallback&key=" + credentials;
+                 CallRestService(routeRequest);
+             });
+
+         }
+
+
+          function RouteCallback(result) {
+
+
+             if (result &&
+                   result.resourceSets &&
+                   result.resourceSets.length > 0 &&
+                   result.resourceSets[0].resources &&
+                   result.resourceSets[0].resources.length > 0) {
+
+                     // Set the map view
+                     var bbox = result.resourceSets[0].resources[0].bbox;
+                     var viewBoundaries = Microsoft.Maps.LocationRect.fromLocations(new Microsoft.Maps.Location(bbox[0], bbox[1]), new Microsoft.Maps.Location(bbox[2], bbox[3]));
+                     map.setView({ bounds: viewBoundaries});
+
+
+                     // Draw the route
+                     var routeline = result.resourceSets[0].resources[0].routePath.line;
+                     var routepoints = new Array();
+
+                     for (var i = 0; i < routeline.coordinates.length; i++) {
+
+                         routepoints[i]=new Microsoft.Maps.Location(routeline.coordinates[i][0], routeline.coordinates[i][1]);
+                     }
+
+
+                     // Draw the route on the map
+                     var routeshape = new Microsoft.Maps.Polyline(routepoints, {strokeColor:new Microsoft.Maps.Color(200,0,0,200)});
+                     map.entities.push(routeshape);
+
+                 }
+         }
+
+
+         function CallRestService(request)
+         {
+            var script = document.createElement("script");
+            script.setAttribute("type", "text/javascript");
+            script.setAttribute("src", request);
+            document.body.appendChild(script);
+         }
+
+    </script>
+</head>
+<body onload="GetMap();">
+    <div id='mapDiv' style="position:relative; width:400px; height:400px;"></div>
+    <input id="txtStart" type="text" value="55.820911,49.060822" />
+    <input id="txtEnd" type="text" value="51.592365,45.960803" />
+    <input type="button" value="Calculate Route" onclick="ClickRoute()" />
+</body>
+</html>

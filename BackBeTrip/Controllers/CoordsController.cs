@@ -13,33 +13,32 @@ using System.Web.Http.Results;
 using System.Web.Mvc;
 using Newtonsoft.Json;
 using BackBeTrip.Models;
+using System.Globalization;
 
 namespace BackBeTrip.Controllers
 {
 
-    //Example of API usage
-    public class ValuesController : ApiController
+    public class CoordsController : ApiController
     {
 
+        public HttpResponseMessage Get(string from, string to, int radius, string types)
+        {
+            string [] spl = from.Split(',');
+            WayPoint fromWp = new WayPoint(Double.Parse(spl[0], CultureInfo.InvariantCulture), Double.Parse(spl[1], CultureInfo.InvariantCulture));
+            spl = to.Split(',');
+            WayPoint toWp = new WayPoint(Double.Parse(spl[0], CultureInfo.InvariantCulture), Double.Parse(spl[1], CultureInfo.InvariantCulture));
 
-        // GET api/values
-        public HttpResponseMessage Get()
-        {          
-            List<WayPoint> waypoints = new List<WayPoint>();
+            List<Place> waypoints = RouteController.CreateNiceRoute(fromWp, toWp, radius, types.Split(',').ToList());
        
-            WayPoint t1 = new WayPoint(56.3758, 47.5345);
-
-            waypoints.Add(t1);
-
             var resp = new HttpResponseMessage()
             {
                 Content = new StringContent(JsonConvert.SerializeObject(waypoints))
             };
             resp.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            return resp;
-              
+            return resp;         
         }
 
+        
         // GET api/values/5
         public string Get(int id)
         {

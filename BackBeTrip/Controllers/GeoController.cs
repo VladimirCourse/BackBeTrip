@@ -10,19 +10,19 @@ namespace BackBeTrip.Controllers
     public class GeoController
     {
 
-        private static double EarthRad = 6378.1;
+        private static double EarthRad = 6378000.1;
 
         private static double ToDegrees(double angle)
         {
             return angle * (180.0 / Math.PI);
         }
 
-        private static double  ToRadians(double angle)
+        private static double ToRadians(double angle)
         {
             return Math.PI * angle / 180.0;
         }
 
-        public static WayPoint GetDestByBearing(WayPoint from, double angle, double distance)
+        public static WayPoint DestByBearing(WayPoint from, double angle, double distance)
         {
             double brng = ToRadians(angle);
             double lat1 = ToRadians(from.Lat);
@@ -33,10 +33,10 @@ namespace BackBeTrip.Controllers
             return new WayPoint(ToDegrees(lat2), ToDegrees(lon2));
         }
 
-        public static double GetBearing(WayPoint first, WayPoint second)
+        public static double Bearing(WayPoint from, WayPoint to)
         {
-            double y = second.Long - first.Long;
-            double x = Math.Log(Math.Tan(second.Lat / 2.0 + Math.PI / 4.0) / Math.Tan(first.Lat / 2.0 + Math.PI / 4.0));
+            double y = to.Long - from.Long;
+            double x = Math.Log(Math.Tan(to.Lat / 2.0 + Math.PI / 4.0) / Math.Tan(from.Lat / 2.0 + Math.PI / 4.0));
             if (Math.Abs(y) > Math.PI)
             {
                 if (y > 0.0)
@@ -54,9 +54,38 @@ namespace BackBeTrip.Controllers
             return brng;
         }
 
-        public static WayPoint GetOffsetDist(WayPoint first, WayPoint second, double distance)
+        public static WayPoint OffsetPoint(WayPoint from, WayPoint to, double distance)
         {
-            return GetDestByBearing(first, GetBearing(first, second), distance);
+            //return DestByBearing(from, Bearing(from, to), distance);
+
+            var dLon = ToRadians(to.Long - from.Long);
+            var dPhi = Math.Log(
+                Math.Tan(ToRadians(to.Lat) / 2 + Math.PI / 4) / Math.Tan(ToRadians(from.Lat) / 2 + Math.PI / 4));
+            if (Math.Abs(dLon) > Math.PI)
+                dLon = dLon > 0 ? -(2 * Math.PI - dLon) : (2 * Math.PI + dLon);
+            var initialBearingRadians = (ToDegrees(Math.Atan2(dLon, dPhi)) + 360) % 360;
+
+            return DestByBearing(from, initialBearingRadians, distance);
+           
+        }
+
+        public static double Distance(WayPoint from, WayPoint to)
+        {
+            double lat1 = from.Lat;
+            double lon1 = from.Long;
+            double lat2 = to.Lat;
+            double lon2 = to.Long;
+
+            double theta = ToRadians(lon1 - lon2);
+            lat1 = ToRadians(lat1);
+            lon1 = ToRadians(lon1);
+            lat2 = ToRadians(lat2);
+            lon2 = ToRadians(lon2);
+
+            double dist = Math.Sin(lat1) * Math.Sin(lat2) + Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(theta);
+            dist = ToDegrees(Math.Acos(dist)) * 60 * 1.1515 * 1.609344 * 1000;
+
+            return dist;
         }
 
     }
