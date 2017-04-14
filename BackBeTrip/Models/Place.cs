@@ -17,6 +17,8 @@ namespace BackBeTrip.Models
 
         [JsonProperty("place_id")]
         public string PlaceId { get; set; }
+        [JsonProperty("photo_id")]
+        public string PhotoId { get; set; }
         [JsonProperty("location")]
         public WayPoint Location { get; set; }
         [JsonProperty("name")]
@@ -25,5 +27,6 @@ namespace BackBeTrip.Models
         public string Type { get; set; }
         [JsonProperty("rating")]
         public double Rating { get; set; }
+
     }
 }

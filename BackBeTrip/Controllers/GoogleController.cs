@@ -102,7 +102,7 @@ namespace BackBeTrip.Controllers
         // достопримечательности
         public static List <Place> GetAttractions(WayPoint location, int radius, List <string> types)
         {
-            string url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={0}&radius={1}&types={2}&key={3}";
+            string url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?language=RU&location={0}&radius={1}&types={2}&key={3}";
             string address = string.Format(
                 url,
                 location.ToString(),
@@ -135,6 +135,11 @@ namespace BackBeTrip.Controllers
                         loc.Lat = place.geometry.location.lat;
                         loc.Long = place.geometry.location.lng;
                         tmp.Location = loc;
+                        try
+                        {
+                            tmp.PhotoId = place.photos[0].photo_reference;
+                        }
+                        catch { }
                         try
                         {
                             tmp.Rating = place.rating;
