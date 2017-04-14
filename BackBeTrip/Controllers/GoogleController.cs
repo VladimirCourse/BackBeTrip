@@ -139,7 +139,9 @@ namespace BackBeTrip.Controllers
                         {
                             tmp.PhotoId = place.photos[0].photo_reference;
                         }
-                        catch { }
+                        catch {
+                            tmp.PhotoId = "noimg";
+                        }
                         try
                         {
                             tmp.Rating = place.rating;
