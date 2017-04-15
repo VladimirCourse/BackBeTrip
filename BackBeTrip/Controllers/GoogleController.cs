@@ -15,7 +15,10 @@ namespace BackBeTrip.Controllers
  
     public class GoogleController
     {
-        private static string keyPlaces = "AIzaSyAc5uRZlE8iXemDa8OhBLoE0I7M-kI9ZKU";
+        //PL: AIzaSyDUCNi3LeZ7xXnnzqZwL3KNeL4NKf-JDEY, AIzaSyAc5uRZlE8iXemDa8OhBLoE0I7M-kI9ZKU
+        //DIR: AIzaSyBNlgOY_CAeMSrEBqHl9BdZ8MAHG19a5mU,AIzaSyBUS26j6H336Tzz_lllTlOmuU2JHbmmgRk, 
+
+        private static string keyPlaces = "AIzaSyDUCNi3LeZ7xXnnzqZwL3KNeL4NKf-JDEY";
         private static string keyDirections = "AIzaSyBUS26j6H336Tzz_lllTlOmuU2JHbmmgRk";
         private static string keyGeocoding = "AIzaSyDEcYIVNxT6bSakYG9NhS3NjxfejjE10_A";
 
